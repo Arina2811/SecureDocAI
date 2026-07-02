@@ -12,7 +12,7 @@ import logging
 from typing import Optional
 
 import numpy as np
-import google.generativeai as genai
+import google.genai as genai
 
 import config
 from models.schemas import DetectedEntity, RiskAssessment
@@ -167,8 +167,7 @@ def answer_question(
             "to the `.env` file to enable AI-powered question answering."
         )
 
-    genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
 
     entities_summary = get_entities_summary(entities)
 
@@ -206,9 +205,10 @@ def answer_question(
     gemini_failed = False
     for attempt in range(max_retries):
         try:
-            response = model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
+            response = client.models.generate_content(
+                model=config.GEMINI_MODEL,
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
                     temperature=config.GEMINI_TEMPERATURE,
                     max_output_tokens=config.GEMINI_MAX_TOKENS,
                 ),

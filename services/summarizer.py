@@ -11,7 +11,7 @@ import logging
 import re
 from datetime import datetime
 
-import google.generativeai as genai
+import google.genai as genai
 
 import config
 from models.schemas import (
@@ -79,8 +79,7 @@ def _generate_ai_report(
     violations: list[ComplianceViolation],
 ) -> ComplianceReport:
     """Call Gemini to produce a structured compliance report."""
-    genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
 
     entities_summary = get_entities_summary(entities)
 
@@ -92,9 +91,10 @@ def _generate_ai_report(
         total_entities=risk.total_entities,
     )
 
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.types.GenerationConfig(
+    response = client.models.generate_content(
+        model=config.GEMINI_MODEL,
+        contents=prompt,
+        config=genai.types.GenerateContentConfig(
             temperature=config.GEMINI_TEMPERATURE,
             max_output_tokens=config.GEMINI_MAX_TOKENS,
         ),
