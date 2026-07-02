@@ -17,7 +17,7 @@ import re
 from collections import Counter
 from typing import Optional
 
-import google.generativeai as genai
+import google.genai as genai
 
 import config
 from models.schemas import (
@@ -33,8 +33,7 @@ from utils.patterns import SENSITIVE_PATTERNS
 logger = logging.getLogger("securedoc.detector")
 
 
-# ─── Public API ────────────────────────────────────────────────────────────────
-
+# ─── Public API ─────────────────────────────────────────────────────────────
 
 def detect_sensitive_data(
     text: str,
@@ -102,8 +101,7 @@ def get_entities_summary(entities: list[DetectedEntity]) -> str:
     return "\n".join(lines)
 
 
-# ─── Regex Detector ───────────────────────────────────────────────────────────
-
+# ─── Regex Detector ────────────────────────────────────────────────────────
 
 def _detect_regex(text: str) -> list[DetectedEntity]:
     """Apply all regex patterns from ``utils.patterns``."""
@@ -155,17 +153,20 @@ import streamlit as st
 
 @st.cache_resource
 def _get_nlp():
-    """Lazy-load the spaCy model (downloads if needed) with caching."""
+    """Lazy-load the spaCy model with caching. No runtime downloads."""
     try:
         import spacy
-
+        
         try:
             return spacy.load("en_core_web_sm")
         except OSError:
-            logger.info("Downloading spaCy model en_core_web_sm …")
-            from spacy.cli import download
-            download("en_core_web_sm")
-            return spacy.load("en_core_web_sm")
+            # Model not available - don't try to download in Streamlit Cloud
+            # (read-only environment, permission denied)
+            logger.warning(
+                "spaCy model 'en_core_web_sm' not found. "
+                "Install locally: python -m spacy download en_core_web_sm"
+            )
+            raise
     except ImportError:
         logger.warning("spaCy not installed — NER detection unavailable")
         raise
@@ -259,16 +260,19 @@ _SEVERITY_MAP = {
 def _detect_llm(text: str) -> list[DetectedEntity]:
     """Use Gemini to find contextual / business-confidential entities."""
     genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    model = genai.Client().models.generate_content_stream
 
     # Truncate for the prompt (Gemini has token limits)
     truncated = text[:8_000]
     prompt = LLM_DETECTION_PROMPT.format(document_text=truncated)
 
     try:
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
+        # Use the new google-genai SDK
+        client = genai.Client(api_key=config.GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model=config.GEMINI_MODEL,
+            contents=prompt,
+            config=genai.types.GenerateContentConfig(
                 temperature=0.2,
                 max_output_tokens=2048,
             ),
@@ -310,8 +314,7 @@ def _detect_llm(text: str) -> list[DetectedEntity]:
     return results
 
 
-# ─── Deduplication ────────────────────────────────────────────────────────────
-
+# ─── Deduplication ────────────────────────────────────────────────────────
 
 def _deduplicate(entities: list[DetectedEntity]) -> list[DetectedEntity]:
     """Remove duplicate entities (same type + same value)."""
