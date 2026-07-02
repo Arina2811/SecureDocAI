@@ -1,0 +1,51 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Docker
+.dockerignore
+
+# Streamlit
+.streamlit/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# FAISS index files
+*.index
+*.faiss
+
+# Uploaded documents (runtime)
+uploads/
+temp/
