@@ -6,6 +6,7 @@ risk thresholds, and application-wide constants.
 """
 
 import os
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 # Load environment variables from .env file (override=True ensures .env takes priority)
