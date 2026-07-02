@@ -260,7 +260,7 @@ with st.sidebar:
 
     st.divider()
     st.caption(f"SecureDoc AI v{config.APP_VERSION}")
-    st.caption("Powered by Google Gemini & spaCy")
+    
 
 
 # ─── File Processing ──────────────────────────────────────────────────────────
