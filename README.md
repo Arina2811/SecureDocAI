@@ -141,8 +141,9 @@ Access the application at http://localhost:8501.
 
 ## Deployment
 
-### Streamlit Cloud / Render / Hugging Face Spaces
+### Streamlit Cloud
 Ensure that the `GEMINI_API_KEY` is configured in the environment secrets of your chosen hosting platform. Add the spaCy model download command (`python -m spacy download en_core_web_sm`) to your build process.
+Streamlit: https://securedocai.streamlit.app/
 
 ---
 
